@@ -2,7 +2,7 @@
 
 An interactive data analytics portfolio project that blends **quantum physics simulations** with a full **data analytics dashboard**. Built for showcasing EDA, visualization, and storytelling skills for data analytics roles.
 
-🔗 **Live Demo:** *Deploy to Streamlit Cloud and add link here*
+🔗 **Live Demo:** *https://quantum-universe-pro-kkgdt8cr5vauuelcexejqm.streamlit.app/*
 
 ---
 
