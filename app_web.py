@@ -1,14 +1,32 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.graph_objects as go
 import plotly.express as px
 import numpy as np
 import pandas as pd
 
+# ---------- Page Config ----------
 st.set_page_config(page_title="Quantum Universe Pro", layout="wide", initial_sidebar_state="expanded")
 
+# ---------- Google Analytics ----------
+# Apni GA4 ID yahan daalo, fir uncomment karo
+# GA_ID = "G-XXXXXXXXXX"
+# ga_code = f"""
+# <script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
+# <script>
+# window.dataLayer = window.dataLayer || [];
+# function gtag(){{dataLayer.push(arguments);}}
+# gtag('js', new Date());
+# gtag('config', '{GA_ID}');
+# </script>
+# """
+# components.html(ga_code, height=0)
+
+# ---------- Sidebar ----------
 st.sidebar.title("🌌 Quantum Lab Pro")
 menu = st.sidebar.selectbox("Choose Module", [
     "📊 Data Analytics Dashboard",
+    "🪐 Exoplanet Explorer (Real NASA Data)",
     "Big Bang Timeline",
     "3D Galaxy Universe",
     "Black Hole + Galaxy",
@@ -16,7 +34,10 @@ menu = st.sidebar.selectbox("Choose Module", [
     "Cosmic Inflation",
     "Quantum Fluctuations + NASA CMB"
 ])
+st.sidebar.markdown("---")
+st.sidebar.success("Pro Analytics Mode Active")
 
+# ---------- Shared Data ----------
 @st.cache_data
 def get_galaxy_data(n=3000):
     rng = np.random.default_rng(42)
@@ -42,7 +63,7 @@ def get_galaxy_data(n=3000):
 
 df_gal = get_galaxy_data()
 
-# ---------- DATA ANALYTICS ----------
+# ---------- DATA ANALYTICS DASHBOARD ----------
 if menu == "📊 Data Analytics Dashboard":
     st.title("Data Analytics Dashboard — Galaxy Survey")
     st.caption("Simulated survey data derived from quantum fluctuation model")
@@ -91,6 +112,71 @@ if menu == "📊 Data Analytics Dashboard":
     """)
     csv = df_gal.to_csv(index=False).encode('utf-8')
     st.download_button("⬇️ Download Galaxy Dataset (CSV)", csv, "quantum_galaxy_survey.csv", "text/csv")
+
+    with st.expander("📐 Analytics Methods Used"):
+        st.markdown("""
+        - EDA: describe, value_counts, correlation
+        - Visualization: 3D scatter, bar, heatmap
+        - Statistical Insight: correlation analysis
+        """)
+
+# ---------- EXOPLANET EXPLORER ----------
+elif menu == "🪐 Exoplanet Explorer (Real NASA Data)":
+    st.title("Exoplanet Explorer — Real NASA Data")
+    st.caption("Data source: NASA Exoplanet Archive")
+
+    @st.cache_data(ttl=3600)
+    def load_exoplanets():
+        url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+pl_name,hostname,discoverymethod,disc_year,pl_orbper,pl_rade,pl_bmasse,sy_dist+from+ps&format=csv"
+        try:
+            df = pd.read_csv(url)
+            return df.dropna(subset=['pl_name'])
+        except Exception:
+            # Fallback sample
+            return pd.DataFrame({
+                'pl_name':['Kepler-22b','Proxima Cen b','TRAPPIST-1e'],
+                'discoverymethod':['Transit','Radial Velocity','Transit'],
+                'disc_year':[2011,2016,2017],
+                'pl_orbper':[289.9,11.2,6.1],
+                'pl_rade':[2.4,1.1,0.92],
+                'pl_bmasse':[36,1.27,0.62],
+                'sy_dist':[195,1.3,12.1]
+            })
+
+    df_exo = load_exoplanets()
+
+    c1,c2,c3,c4 = st.columns(4)
+    c1.metric("Total Planets", f"{len(df_exo):,}")
+    c2.metric("Discovery Methods", df_exo['discoverymethod'].nunique())
+    c3.metric("Avg Radius (Earth)", f"{df_exo['pl_rade'].mean():.2f}")
+    c4.metric("Closest (pc)", f"{df_exo['sy_dist'].min():.2f}")
+
+    method = st.multiselect("Discovery Method", sorted(df_exo['discoverymethod'].dropna().unique()),
+                            default=sorted(df_exo['discoverymethod'].dropna().unique())[:3])
+    year_range = st.slider("Discovery Year", int(df_exo['disc_year'].min()), int(df_exo['disc_year'].max()), (2010,2024))
+
+    df_f = df_exo[df_exo['discoverymethod'].isin(method) & df_exo['disc_year'].between(year_range[0], year_range[1])]
+
+    left, right = st.columns(2)
+    with left:
+        st.subheader("Radius vs Mass")
+        fig_sc = px.scatter(df_f.dropna(subset=['pl_rade','pl_bmasse']), x='pl_rade', y='pl_bmasse',
+                            color='discoverymethod', hover_name='pl_name', log_y=True)
+        fig_sc.update_layout(paper_bgcolor='black', plot_bgcolor='black', font_color='white')
+        st.plotly_chart(fig_sc, use_container_width=True)
+
+    with right:
+        st.subheader("Discoveries per Year")
+        yr = df_f['disc_year'].value_counts().sort_index()
+        fig_yr = px.bar(x=yr.index, y=yr.values, labels={'x':'Year','y':'Count'})
+        fig_yr.update_layout(paper_bgcolor='black', plot_bgcolor='black', font_color='white')
+        st.plotly_chart(fig_yr, use_container_width=True)
+
+    st.subheader("Top 20 Closest Exoplanets")
+    st.dataframe(df_f.sort_values('sy_dist').head(20)[['pl_name','hostname','sy_dist','pl_rade','pl_bmasse','discoverymethod','disc_year']], use_container_width=True)
+
+    csv_exo = df_f.to_csv(index=False).encode('utf-8')
+    st.download_button("⬇️ Download Filtered Exoplanets (CSV)", csv_exo, "exoplanets.csv", "text/csv")
 
 # ---------- BIG BANG TIMELINE ----------
 elif menu == "Big Bang Timeline":
@@ -197,6 +283,3 @@ else:
     fig = go.Figure(data=go.Heatmap(z=field, colorscale='RdBu'))
     fig.update_layout(paper_bgcolor='black', font_color='white')
     st.plotly_chart(fig, use_container_width=True)
-
-st.sidebar.markdown("---")
-st.sidebar.success("Pro Analytics Mode Active")
