@@ -1,6 +1,6 @@
 # 🌌 Quantum Universe Pro — Data Analytics + Real NASA Data
 
-[![Live Demo](https://quantum-universe-pro-kkgdt8cr5vauuel
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge&logo=streamlit)](https://quantum-universe-pro-kkgdt8cr5vauuelcexejqm.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.37+-red?style=for-the-badge&logo=streamlit)](https://streamlit.io)
 [![Plotly](https://img.shields.io/badge/Plotly-5.22+-purple?style=for-the-badge&logo=plotly)](https://plotly.com)
